@@ -1,11 +1,12 @@
 var express = require('express');
-var f       = require('fs');
-var r       = require('redis').createClient();
+var fs = require('fs');
+var r  = require('redis').createClient();
+
 r.on("error", function(err){
 	console.log("Redis client error: " + err);
 });
 
-var app     = module.exports = express.createServer();
+var app = module.exports = express.createServer();
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -34,5 +35,4 @@ app.configure('production', function(){
 require('./routes/main.js')(app, r); 
 require('./routes/backoffice.js')(app, r); 
 
-app.listen(3000);
-console.log("Server listening on port %d", app.address().port);
+app.listen(3003);

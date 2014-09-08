@@ -1,14 +1,12 @@
-var fs = require('fs');
-
 module.exports = function(app, r){
     function getTimeStamp(){
-        var x     = new Date();
-        var a     = x.getFullYear();
-        var b     = x.getMonth() + 1;
-        var c     = x.getDay();
-        var d     = x.getHours();
-        var e     = x.getMinutes();
-        var f     = x.getSeconds();
+        var x = new Date();
+        var a = x.getFullYear();
+        var b = x.getMonth() + 1;
+        var c = x.getDay();
+        var d = x.getHours();
+        var e = x.getMinutes();
+        var f = x.getSeconds();
         var stamp = [a,b,c,d,e,f].join(":");
         return stamp;
     }
@@ -38,25 +36,26 @@ module.exports = function(app, r){
         return newList;
     }
     // root
-    app.get('/', function(req, res){
+    app.get('/', function(req, res) {
         var info = r.info();
         res.send(info);
     });
     
-    app.get('/author', function(req, res){
+    app.get('/author', function(req, res) {
         res.send("Author: Lloyd Moore");
     });
 
     // REDIS COMMANDS
 
-    app.get('/set/:k/:v', function(req, res){
-        k = req.params.k; v = req.params.v;
+    app.get('/set/:k/:v', function(req, res) {
+        k = req.params.k; 
+        v = req.params.v;
         r.set(k, v, function(out){
             res.send(k + ' has been set to ' + v);
         });
     });
 
-    app.get('/add/:evt', function(req, res){
+    app.get('/add/:evt', function(req, res) {
         evt   = req.params.evt;
         stamp = getTimeStamp();
         r.zincrby('evt:'+evt, 1, stamp, function(err, out){
@@ -64,31 +63,34 @@ module.exports = function(app, r){
         });
     });
 
-    app.get('/zincrby/:key/:amount/:member', function(req, res){
+    app.get('/zincrby/:key/:amount/:member', function(req, res) {
         key = req.params.key; 
         mem = req.params.member;
         amt = req.params.amount;
-        r.zincrby(key, amt, mem, function(err, out){
+
+        r.zincrby(key, amt, mem, function(err, out) {
             res.send(out);
         });
     });
 
-    app.get('/get/:key', function(req, res){
+    app.get('/get/:key', function(req, res) {
         r.get(req.params.key, function(err, out){
             (err) ? console.log(err) : res.send(out); 
         });
     });
 
     // hset
-    app.get('/hset/:k/:m/:v', function(req, res){
-        r.hset(req.params.k, req.params.m, req.params.v,
-            function(out){ res.send('ok'); }
-        );
+    app.get('/hset/:k/:m/:v', function(req, res) {
+        p = req.params;
+        r.hset(p.k, p.m, p.v, function(out) {
+            res.send('ok'); 
+        });
     });
 
     // hget
     app.get('/hget/:key/:member', function(req, res){
-        r.hget(req.params.key, req.params.member, function(err, out){
+        p = req.params;
+        r.hget(p.key, p.member, function(err, out){
             res.send(out);
         });
     });
@@ -96,6 +98,7 @@ module.exports = function(app, r){
     app.get('/hmset/:k/:data(*)', function(req, res){
         k = req.params.k;
         data = pathToHash(req.params.data);
+
         r.hmset(k, data, function(err, out){
             res.send(data);
         })
@@ -103,6 +106,7 @@ module.exports = function(app, r){
 
     app.get('/hgetall/:key', function(req, res){
         var key = req.params.key;
+
         r.hgetall(key, function(err, out){
             res.send(out)
         });
@@ -112,6 +116,7 @@ module.exports = function(app, r){
         var start = req.params.start;
         var end   = req.params.end;
         var key   = 'evt:' + req.params.key;
+
         r.zrange(key, start, end, 'withscores', function(err, out){
             var out = prettyPrintRange(out);
             res.send(out)
